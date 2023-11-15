@@ -72,6 +72,7 @@ import { DefaultEventBroker } from '@backstage/plugin-events-backend';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { MeterProvider } from '@opentelemetry/sdk-metrics';
 import { metrics } from '@opentelemetry/api';
+import awsCodeServices from './plugins/awsCodeServices';
 
 // Expose opentelemetry metrics using a Prometheus exporter on
 // http://localhost:9464/metrics . See prometheus.yml in packages/backend for
@@ -172,6 +173,9 @@ async function main() {
   const linguistEnv = useHotMemoize(module, () => createEnv('linguist'));
   const devToolsEnv = useHotMemoize(module, () => createEnv('devtools'));
   const nomadEnv = useHotMemoize(module, () => createEnv('nomad'));
+  const awsCodeServicesEnv = useHotMemoize(module, () =>
+    createEnv('aws-codeservices-backend'),
+  );
 
   const apiRouter = Router();
   apiRouter.use('/catalog', await catalog(catalogEnv));
@@ -198,6 +202,10 @@ async function main() {
   apiRouter.use('/linguist', await linguist(linguistEnv));
   apiRouter.use('/devtools', await devTools(devToolsEnv));
   apiRouter.use('/nomad', await nomad(nomadEnv));
+  apiRouter.use(
+    '/aws-codeservices-backend',
+    await awsCodeServices(awsCodeServicesEnv),
+  );
   apiRouter.use(notFoundHandler());
 
   await lighthouse(lighthouseEnv);
